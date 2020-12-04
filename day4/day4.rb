@@ -1,15 +1,24 @@
-Passport = Struct.new(:fields) do
-  REQUIRED_FIELDS = %w{byr iyr eyr hgt hcl ecl pid}
+Passport = Struct.new(:byr, :iyr, :eyr, :hgt, :hcl, :ecl, :pid, :cid) do
+  REQUIRED_FIELDS = %i{byr iyr eyr hgt hcl ecl pid}
   # Convert an array of ["byr:gry", "iyr:2017"] into a Passport with
   # fields={"byr": "gry", "iyr": "2017"}
   def self.from_a(array_of_fields)
     fields = Hash[array_of_fields.map{ |e| e.split(":") }]
 
-    self.new(fields)
+    self.new(
+      fields['byr'],
+      fields['iyr'],
+      fields['eyr'],
+      fields['hgt'],
+      fields['hcl'],
+      fields['ecl'],
+      fields['pid'],
+      fields['cid'],
+    )
   end
 
   def valid?
-    REQUIRED_FIELDS.all?{ |required_field| fields.keys.include? required_field }
+    REQUIRED_FIELDS.none?{ |required_field| self[required_field].nil? }
   end
 end
 

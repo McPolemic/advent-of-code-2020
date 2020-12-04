@@ -16,44 +16,45 @@ RSpec.describe Passport do
         'hgt:183cm',
       ]
       expected_fields = {
-        'ecl' => 'gry',
-        'pid' => '860033327',
-        'eyr' => '2020',
-        'hcl' => '#fffffd',
-        'byr' => '1937',
-        'iyr' => '2017',
-        'cid' => '147',
-        'hgt' => '183cm',
+        ecl: 'gry',
+        pid: '860033327',
+        eyr: '2020',
+        hcl: '#fffffd',
+        byr: '1937',
+        iyr: '2017',
+        cid: '147',
+        hgt: '183cm',
       }
 
       passport = Passport.from_a(fields)
 
-      expect(passport.fields).to eq expected_fields
+      expected_fields.each do |name, _|
+        expect(passport[name]).to be
+      end
     end
   end
 
   describe '#valid?' do
     let(:fields) do
-      {
-        'byr' => :ignored,
-        'iyr' => :ignored,
-        'eyr' => :ignored,
-        'hgt' => :ignored,
-        'hcl' => :ignored,
-        'ecl' => :ignored,
-        'pid' => :ignored,
-      }
+      [
+        'byr:_',
+        'iyr:_',
+        'eyr:_',
+        'hgt:_',
+        'hcl:_',
+        'ecl:_',
+        'pid:_',
+      ]
     end
 
     it 'is valid if all required fields are present' do
-      passport = Passport.new(fields)
+      passport = Passport.from_a(fields)
 
       expect(passport.valid?).to be true
     end
 
     it 'is invalid if one required field is missing (pid)' do
-      input = fields.reject{ |k,_| k == "pid" }
-      passport = Passport.new(input)
+      passport = Passport.new(fields[0...-1])
 
       expect(passport.valid?).to be false
     end
