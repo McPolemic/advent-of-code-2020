@@ -1,14 +1,17 @@
+require 'set'
+
 Passport = Struct.new(:byr, :iyr, :eyr, :hgt, :hcl, :ecl, :pid, :cid) do
   REQUIRED_FIELDS = %i{byr iyr eyr hgt hcl ecl pid}
+  VALID_EYE_COLORS = %w{amb blu brn gry grn hzl oth}.to_set
   # Convert an array of ["byr:gry", "iyr:2017"] into a Passport with
   # fields={"byr": "gry", "iyr": "2017"}
   def self.from_a(array_of_fields)
     fields = Hash[array_of_fields.map{ |e| e.split(":") }]
 
     self.new(
-      fields['byr'],
-      fields['iyr'],
-      fields['eyr'],
+      fields['byr'].to_i,
+      fields['iyr'].to_i,
+      fields['eyr'].to_i,
       fields['hgt'],
       fields['hcl'],
       fields['ecl'],
@@ -17,8 +20,46 @@ Passport = Struct.new(:byr, :iyr, :eyr, :hgt, :hcl, :ecl, :pid, :cid) do
     )
   end
 
+  def valid_height?
+    _, amount, units = hgt.match(/(\d+)(.+)/).to_a
+    amount = amount.to_i
+
+    case units
+    when "cm"
+      amount.between? 150, 193
+    when "in"
+      amount.between? 59, 76
+    else
+      return false
+    end
+  end
+
+  def valid_hair_color?
+    hcl.match(/#[0-9a-f]{6}/)
+  end
+
+  def valid_eye_color?
+    VALID_EYE_COLORS.include? ecl
+  end
+
+  def valid_passport_id?
+    pid.match(/^\d{9}$/)
+  end
+
   def valid?
-    REQUIRED_FIELDS.none?{ |required_field| self[required_field].nil? }
+    return false if REQUIRED_FIELDS.any? do |field|
+      self[field].nil?
+    end
+
+    return false unless valid_height? &&
+      valid_hair_color? &&
+      valid_eye_color? &&
+      valid_passport_id? &&
+      byr.between?(1920, 2002) &&
+      iyr.between?(2010, 2020) &&
+      eyr.between?(2020, 2030)
+
+    true
   end
 end
 
