@@ -1,5 +1,5 @@
 require 'spec_helper'
-require_relative '../day1'
+require_relative '../day1/day1'
 
 RSpec.describe Day1 do
   let (:input) {
