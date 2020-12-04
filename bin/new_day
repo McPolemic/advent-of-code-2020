@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+
+def usage!
+  puts <<~EOF
+    Generates template files for a new day
+
+    Usage: ./new_day <day_number>
+
+    Example: ./new_day 4
+    Creates the following files:
+    * day4/day4.rb
+    * spec/day4_spec.rb
+  EOF
+  exit
+end
+
+usage! unless ARGV.first
+day_number = ARGV.first.to_i
+day = "day#{day_number}"
+class_name = "Day#{day_number}"
+
+FileUtils.mkdir(day)
+ruby_file = File.open("#{day}/#{day}.rb", "w")
+ruby_file.puts <<~EOF
+  class #{class_name}
+    def self.solve(input_file)
+      lines = input_file.read.each_line.map(&:strip)
+    end
+  end
+
+  puts #{class_name}.solve(File.open(ARGV.first, 'r')) if __FILE__ == $0
+EOF
+ruby_file.close
+puts "Created #{ruby_file.path}"
+
+spec_file = File.open("spec/#{day}_spec.rb", "w")
+spec_file.puts <<~EOF
+  require 'spec_helper'
+  require_relative '../#{day}/#{day}'
+
+  RSpec.describe #{class_name} do
+    describe 'solve' do
+    end
+  end
+EOF
+spec_file.close
+puts "Created #{spec_file.path}"
+
