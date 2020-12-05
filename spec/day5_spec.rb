@@ -48,17 +48,3 @@ RSpec.describe BoardingPass do
     end
   end
 end
-
-RSpec.describe Day5 do
-  describe 'solve' do
-    it 'finds the highest seat ID' do
-      sample_problems = StringIO.new <<~EOF
-        BFFFBBFRRR
-        FFFBBBFRRR
-        BBFFBBFRLL
-      EOF
-
-      expect(Day5.solve(sample_problems)).to eq 820
-    end
-  end
-end

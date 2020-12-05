@@ -1,3 +1,5 @@
+require 'set'
+
 class SeatRange
   attr_reader :min, :max
 
@@ -64,12 +66,21 @@ end
 
 class Day5
   def self.solve(input_file)
-    lines = input_file
+    seats = input_file
       .read
       .each_line
       .map(&:strip)
-      .map{ |line| BoardingPass.new(line).seat_id }
-      .max
+      .map{ |line| BoardingPass.new(line) }
+    
+    taken_seats = seats.map(&:seat_id).to_set
+    started = false
+    (0...128).each do |y|
+      (0...8).each do |x|
+        seat_id = 8*y+x
+        started = true if taken_seats.include?(seat_id)
+        return seat_id if started && !taken_seats.include?(seat_id)
+      end
+    end
   end
 end
 
