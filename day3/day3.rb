@@ -11,17 +11,25 @@ Map = Struct.new(:lines) do
 end
 
 class Day3
+  def self.trees_on_slope(map, x_offset, y_offset)
+    x = y = trees = 0
+    while true
+      x += x_offset
+      y += y_offset
+      trees += 1 if map.tree?(x, y)
+      return trees if map.done?(y)
+    end
+  end
+
   def self.solve(input_file)
     lines = input_file.read.each_line.map(&:strip)
     map = Map.new(lines)
 
-    x = y = trees = 0
-    while true
-      x += 3
-      y += 1
-      trees += 1 if map.tree?(x, y)
-      return trees if map.done?(y)
-    end
+    trees_on_slope(map, 1, 1) *
+      trees_on_slope(map, 3, 1) *
+      trees_on_slope(map, 5, 1) *
+      trees_on_slope(map, 7, 1) *
+      trees_on_slope(map, 1, 2)
   end
 end
 

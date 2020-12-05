@@ -19,7 +19,7 @@ RSpec.describe Day3 do
         .#..#...#.#
       EOF
 
-      expect(Day3.solve(map)).to eq 7
+      expect(Day3.solve(map)).to eq 336
     end
   end
 end
