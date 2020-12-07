@@ -11,7 +11,9 @@ class CustomsForm
   def self.from_group_answers(group)
     answers = group
       .flat_map{|line| line.chars}
-      .uniq
+      .group_by{|answer| answer}
+      .select{|answer, answers| answer if answers.count == group.count}
+      .keys
 
     self.new(answers)
   end
