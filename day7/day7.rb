@@ -47,6 +47,17 @@ class BagRules
       .keys
       .select{ |description| contains_how_many_of_type(description, target) > 0 }
   end
+
+  def type_holds_how_many_bags(source)
+    # It counts as one bag if we don't have a rule for it
+    return 1 unless rules[source]
+
+    # Otherwise, grab all of its container bags and find out how many they hold
+    # plus one for the parent bag
+    rules[source].map do |sub_bag|
+      sub_bag.amount * type_holds_how_many_bags(sub_bag.description)
+    end.sum + 1
+  end
 end
 
 class Day7
@@ -54,7 +65,8 @@ class Day7
     lines = input_file.read.each_line.map(&:strip)
     rules = BagRules.from_rules(lines)
 
-    rules.what_can_hold_type('shiny gold').count
+    # We don't count the top-level shiny gold bag, so we remove one
+    rules.type_holds_how_many_bags('shiny gold') - 1
   end
 end
 
