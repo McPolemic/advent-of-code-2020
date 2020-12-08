@@ -1,5 +1,6 @@
 require 'spec_helper'
 require_relative '../day8/day8'
+require 'stringio'
 
 RSpec.describe VirtualMachine do
   describe '#run' do
@@ -21,9 +22,27 @@ RSpec.describe VirtualMachine do
       expect(machine.acc).to eq 5
     end
   end
-end
 
-RSpec.describe Day8 do
-  describe 'solve' do
+  describe '#rewrite_operation_at_line' do
+    it 'rewrites the operation, leaving the argument alone' do
+      program = ["nop +0" ]
+      machine = VirtualMachine.new(program)
+      machine.rewrite_operation_at_line(0, "jmp")
+      
+      expect(machine.program).to match_array ["jmp +0"]
+    end
+  end
+
+  describe 'dup' do
+    it 'does not rewrite a source machine' do
+      program = ["nop +0" ]
+      machine = VirtualMachine.new(program)
+
+      rewritten_machine = machine.dup
+      rewritten_machine.rewrite_operation_at_line(0, "jmp")
+      
+      expect(rewritten_machine.program).to match_array ["jmp +0"]
+      expect(machine.program).to match_array program
+    end
   end
 end

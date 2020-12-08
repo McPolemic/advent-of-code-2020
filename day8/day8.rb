@@ -1,14 +1,22 @@
 require 'set'
 
+# Ideas for improvement
+# * There's no reason to keep the instructions as strings. Pull them out into
+#   classes for easier reading/manipulation.
 class VirtualMachine
   attr_reader :program, :acc, :current_line, :log
 
   def initialize(program, log: false)
-    @program = program
+    @program = program.dup
     @acc = 0
     @current_line = 0
     @executed_lines = Set.new
     @log = log
+  end
+
+  # Ensure we're duplicating the program so we don't modify the original
+  def dup
+    self.class.new(program.dup, log: log)
   end
 
   class LoopDetected < StandardError; end
@@ -18,7 +26,7 @@ class VirtualMachine
   end
 
   def finished?
-    current_line > program.count
+    current_line >= program.count
   end
 
   def run!
@@ -46,15 +54,66 @@ class VirtualMachine
       @current_line += 1
     end
   end
+
+  def rewrite_operation_at_line(line_number, new_operation)
+    instruction = program[line_number]
+    _, argument = instruction.split(" ")
+
+    rewritten_line = "#{new_operation} #{argument}"
+    program[line_number] = rewritten_line
+  end
+end
+
+# There's definitely a more elegant way to handle this, but it's late
+def rewrite_jmps(machine)
+  jmp_lines = machine.program
+    .each_with_index
+    .select{|line,index| line =~ /^jmp/}
+    .map(&:last)
+
+  jmp_lines.each do |line_number|
+    rewritten_machine = machine.dup
+    rewritten_machine.rewrite_operation_at_line(line_number, "nop")
+
+    begin
+      rewritten_machine.run!
+      puts "Replacing #{line_number} with a nop fixes the program."
+      puts "Accumulator ends with #{rewritten_machine.acc}"
+    rescue VirtualMachine::LoopDetected
+      next
+    end
+  end
+end
+
+def rewrite_nops(machine)
+  nop_lines = machine.program
+    .each_with_index
+    .select{|line,index| line =~ /^nop/}
+    .map(&:last)
+
+  nop_lines.each do |line_number|
+    rewritten_machine = machine.dup
+    rewritten_machine.rewrite_operation_at_line(line_number, "jmp")
+
+    begin
+      rewritten_machine.run!
+      puts "Replacing #{line_number} with a jmp fixes the program."
+      puts "Accumulator ends with #{rewritten_machine.acc}"
+    rescue VirtualMachine::LoopDetected
+      next
+    end
+  end
 end
 
 class Day8
   def self.solve(input_file)
     lines = input_file.read.each_line.map(&:strip)
     machine = VirtualMachine.new(lines)
-    machine.run!
-  rescue VirtualMachine::LoopDetected
-    machine.acc
+
+    rewrite_jmps(machine)
+    rewrite_nops(machine)
+
+    false
   end
 end
 
